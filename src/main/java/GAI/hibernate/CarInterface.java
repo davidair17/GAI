@@ -214,6 +214,27 @@ public class CarInterface extends JFrame{
         formPanel.add(dataLabel);
         formPanel.add(dataField);
 
+        getIdDriver();
+
+        List<String> optionsList = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new FileReader("options.txt"))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                optionsList.add(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            logger.warn("Ошибка", e);
+        }
+
+        String[] options = optionsList.toArray(new String[0]);
+        JComboBox<String> comboBox = new JComboBox<>(options);
+        comboBox.setSelectedIndex(0);
+
+
+        formPanel.add(new JLabel("Select"));
+        formPanel.add(comboBox);
+
 
         dialog.add(formPanel, BorderLayout.CENTER);
 
@@ -231,6 +252,10 @@ public class CarInterface extends JFrame{
 
                 String data = dataField.getText();
 
+                String str = String.valueOf(comboBox.getSelectedItem());
+                int index = str.indexOf(" ");
+                String dr = str.substring(0, index);
+
 
                 Session session1 = HibernateUtil.getSessionFactory().openSession();
                 Transaction transaction = session1.beginTransaction();
@@ -238,6 +263,11 @@ public class CarInterface extends JFrame{
                 Car Car1 = session1.get(Car.class, id);
                 Car1.setCar_plate(name);
                 Car1.setMaintenance(LocalDate.parse(data));
+                Driver test = session1.get(Driver.class, Integer.valueOf(dr));
+                Car1.setDriver(test);
+
+
+                session1.save(Car1);
 
                 session1.update(Car1);
 

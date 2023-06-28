@@ -323,16 +323,13 @@ public class DriverInterface extends JFrame{
 // Создание кнопок и прикрепление иконок
         adding = new JButton(new ImageIcon("./img/add.png"));
         remove = new JButton(new ImageIcon("./img/remove.png"));
-        Report = new JButton(new ImageIcon("./img/pdf.png"));
 // Настройка подсказок для кнопок
         adding.setToolTipText("Add");
         remove.setToolTipText("Delete");
-        Report.setToolTipText("Report");
 // Добавление кнопок на панель инструментов
         toolBar = new JToolBar("Панель инструментов");
         toolBar.add(adding);
         toolBar.add(remove);
-        toolBar.add(Report);
 
 
 // Размещение панели инструментов
@@ -450,97 +447,6 @@ public class DriverInterface extends JFrame{
                 }
             }
         });
-        Report.addActionListener(e -> {
-            logger.debug(e);
-            try {
-
-// Создание парсера документа
-                DocumentBuilder builder =
-                        DocumentBuilderFactory.newInstance().newDocumentBuilder();
-// Создание пустого документа
-                Document doc = builder.newDocument();
-                Node root = doc.createElement("DriverReport");
-                doc.appendChild(root);
-
-                List<Driver> sop = getDriver();
-                List<Car> sop1 = getCar();
-                List<Violation> sop2 = getViolation();
-                for (int i = 0; i < sop.size(); i++) {
-                    String ok = String.valueOf(sop.get(i).getIdDriver());
-                    int flag = 0;
-                    if (ok.equals("")){
-                        flag = 1;
-                    }
-
-                    if (flag == 0) {
-                        Node Driver = doc.createElement("Driver");
-                        root.appendChild(Driver);
-
-                        Element ID = doc.createElement("ID");
-                        ID.setTextContent(ok);
-                        Driver.appendChild(ID);
-
-                        Element Name = doc.createElement("Name");
-                        Name.setTextContent(sop.get(i).getName());
-                        Driver.appendChild(Name);}
-
-                    String ok2 = String.valueOf(sop1.get(i).getIdCar());
-                    int flag2 = 0;
-                    if (ok2.equals("")){
-                        flag2 = 1;
-                    }
-                    if (flag2 == 0) {
-                        Node Car = doc.createElement("Car");
-                        root.appendChild(Car);
-
-                        Element Carplate = doc.createElement("Car_plate");
-                        Carplate.setTextContent(sop1.get(i).getCar_plate());
-                        Car.appendChild(Carplate);
-                        Element Maintenance = doc.createElement("Maintenance");
-                        Maintenance.setTextContent(String.valueOf(sop1.get(i).getMaintenance()));
-                        Car.appendChild(Maintenance);
-                    }
-                    String ok3 = String.valueOf(sop2.get(i).getIdViolation());
-                    int flag3 = 0;
-                    if (ok3.equals("")){
-                        flag3 = 1;
-                    }
-                    if (flag3 == 0) {
-                        Node DA = doc.createElement("Violations");
-                        root.appendChild(DA);
-
-                        Element Violation = doc.createElement("Violation");
-                        Violation.setTextContent(sop2.get(i).getType());
-                        DA.appendChild(Violation);
-                    }
-
-                }
-// Создание дочерних элементов Order и присвоение значений атрибутам
-
-                try {
-// Создание преобразователя документа
-                    Transformer trans = TransformerFactory.newInstance().newTransformer();
-// Создание файла с именем Orders.xml для записи документа
-                    FileWriter fw = new FileWriter("DriverReport.xml");
-// Запись документа в файл
-                    trans.transform(new DOMSource(doc), new StreamResult(fw));
-
-                    FOPPdfDemo.convertToPDF("ReportTemp.xsl", "DriverReport.xml", "Report.pdf");
-                    FOPPdfDemo.main("Report.pdf");
-
-
-                } catch (TransformerException ex) {
-                    ex.printStackTrace();
-                } catch (IOException | FOPException ex) {
-                    throw new RuntimeException(ex);
-
-                }
-            } catch (ParserConfigurationException ex) {
-                ex.printStackTrace();
-            }
-
-        });
-
     }
     public static void main(String[] args) {
 
