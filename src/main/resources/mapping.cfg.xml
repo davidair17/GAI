@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+
+    <class name="GAI.hibernate.Driver" table="Driver">
+        <id name="idDriver" type="java.lang.Integer" column="idDriver" >
+            <generator class="increment" />
+        </id>
+
+        <property name="Name" >
+            <column name="Name" />
+        </property>
+
+        <property name="Dateofbirth" >
+            <column name="Dateofbirth" />
+        </property>
+
+        <set name="Carlist" inverse="true" cascade="all-delete-orphan">
+            <key column="carid" />
+            <one-to-many class="GAI.hibernate.Car" />
+        </set>
+        <set name="Violationlist" inverse="true" cascade="all-delete-orphan">
+            <key column="violationid" />
+            <one-to-many class="GAI.hibernate.Violation" />
+        </set>
+    </class>
+
+    <class name="GAI.hibernate.Car" table="Car">
+        <id name="idCar" type="java.lang.Integer" column="idCar" >
+            <generator class="increment" />
+        </id>
+        <property name="Maintenance">
+            <column name="Maintenance" />
+        </property>
+        <property name="Car_plate">
+            <column name="Car_plate"/>
+        </property>
+
+        <many-to-one name="driver" class="GAI.hibernate.Driver" column="driverid" />
+    </class>
+
+    <class name="GAI.hibernate.Violation" table="Violation">
+        <id name="idViolation" type="java.lang.Integer" column="idViolation" >
+            <generator class="identity" />
+        </id>
+        <property name="Type">
+            <column name="Type" />
+        </property>
+        <property name="Penalty">
+            <column name="Penalty" />
+        </property>
+        <property name="Date">
+            <column name="Date" />
+        </property>
+
+        <many-to-one name="driver" class="GAI.hibernate.Driver" column="driverid" />
+    </class>
+
+
+</hibernate-mapping>
