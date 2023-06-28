@@ -27,6 +27,7 @@ public final class Violation {
     @JoinColumn(name = "driverid")
     private Driver driver;
 
+
     public int getIdViolation() {
         return idViolation;
     }
@@ -69,7 +70,7 @@ public final class Violation {
 
     @Override
     public String toString() {
-        return String.format("%d %s %s %s",
-                this.idViolation, this.Type, this.Penalty, this.Date);
+        return String.format("%d %s %s %s %s",
+                this.idViolation, this.Type, this.Penalty, this.Date, this.driver);
     }
 }

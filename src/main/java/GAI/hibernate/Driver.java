@@ -1,5 +1,6 @@
 package GAI.hibernate;
 
+import net.bytebuddy.asm.Advice;
 import org.hibernate.annotations.Cascade;
 
 import javax.persistence.*;
@@ -27,6 +28,16 @@ public final class Driver {
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "driver", cascade = CascadeType.ALL, orphanRemoval = true)
     @Cascade(org.hibernate.annotations.CascadeType.DELETE)
     private Set<Violation> Violationlist;
+
+    public Driver(String name) {
+    }
+
+    public Driver() {
+
+    }
+
+    public Driver(int id, String name, LocalDate date) {
+    }
 
     public int getIdDriver() {
         return idDriver;
@@ -70,7 +81,28 @@ public final class Driver {
 
     @Override
     public String toString() {
-        return String.format("%d %s %s",
-                this.idDriver, this.Name, this.Dateofbirth);
+        return this.idDriver + " " + this.Name + " " + this.Dateofbirth;
+    }
+    public static Driver valueOf(String driverString) {
+        String[] parts = driverString.split(" ");
+        if (parts.length != 4) {
+            throw new IllegalArgumentException("Invalid driver string format");
+        }
+
+        String name = parts[1] + " " + parts[2];
+        int Id = Integer.parseInt(parts[0]);
+        LocalDate date = LocalDate.parse(parts[3]);
+
+        Driver driver = new Driver();
+        driver.setIdDriver(Id);
+        driver.setName(name);
+        driver.setDateofbirth(date);
+
+        System.out.println(name);
+        System.out.println(Id);
+        System.out.println(date);
+        
+
+        return driver;
     }
 }
