@@ -1,10 +1,15 @@
 7
-Превышение скорости
+Speeding
 2023-04-05
-500 руб.
-1 Джамал Морской 2003-05-05
+500 rub.
+1 Jamal Morskoy 2003-05-05
 8
-Пересечение двойной сплошной
+Intersection of a double solid
 2023-05-04
-Лишение ВУ
-1 Джамал Морской 2003-05-05
+Deprivation of driver license
+1 Jamal Morskoy 2003-05-05
+9
+Speeding
+2022-10-30
+500 rub.
+2 Artur Gibon 2000-03-06

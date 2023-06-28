@@ -394,22 +394,25 @@ public class DriverInterface extends JFrame{
         });
 
         remove.addActionListener(e -> {
+            int result = JOptionPane.showConfirmDialog(null, "Вы уверены?", "Подтверждение", JOptionPane.YES_NO_OPTION);
+            if (result == JOptionPane.YES_OPTION) {
+                // Действия при нажатии на кнопку "Да"
 
-            logger.debug(e);
-            int flag = 0;
-            try {
-                Removebutton(Posts);
-            } catch (NullPointerException ex) {
-                JOptionPane.showMessageDialog(FrameOrder, ex.toString());
-                logger.warn("Ошибка", ex);
-                flag = 1;
-            }
-            if (flag == 0) {
-                int del = Posts.getSelectedRow();
-                int por = Integer.parseInt((String) Posts.getValueAt(del, 0));
-                deleteSQLDriver(por);
-                model.removeRow(Posts.getSelectedRow());
-                JOptionPane.showMessageDialog(remove, "Row Removed!");
+                logger.debug(e);
+                int flag = 0;
+                try {
+                    Removebutton(Posts);
+                } catch (NullPointerException ex) {
+                    JOptionPane.showMessageDialog(FrameOrder, ex.toString());
+                    flag = 1;
+                }
+                if (flag == 0) {
+                    int del = Posts.getSelectedRow();
+                    int por = Integer.parseInt((String) Posts.getValueAt(del, 0));
+                    deleteSQLDriver(por);
+                    model.removeRow(Posts.getSelectedRow());
+                    JOptionPane.showMessageDialog(remove, "Row Removed!");
+                }
             }
         });
 

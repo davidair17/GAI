@@ -1,48 +1,51 @@
 package GAI.hibernate;
 
-
-import javafx.scene.control.DatePicker;
+import org.apache.fop.apps.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
-import org.jdatepicker.DateModel;
-import org.jdatepicker.JDatePanel;
-import org.jdatepicker.JDatePicker;
-
-
+import org.jdatepicker.impl.JDatePanelImpl;
+import org.jdatepicker.impl.JDatePickerImpl;
+import org.jdatepicker.impl.UtilDateModel;
+import org.w3c.dom.*;
 
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
-import java.awt.event.*;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.*;
-import java.lang.reflect.Field;
-import java.text.SimpleDateFormat;
+
+import org.w3c.dom.Document;
+
+import javax.xml.transform.*;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import java.io.File;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
-
-import org.jdatepicker.impl.JDatePanelImpl;
-import org.jdatepicker.impl.JDatePickerImpl;
-import org.jdatepicker.impl.UtilDateModel;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 
 public class ViolationInterface extends JFrame {
     protected static final Logger logger = LogManager.getLogger(ViolationInterface.class);
     private JFrame FrameOrder;
+    private JButton Report;
     private EditableTableModel model;
     private JButton adding;
     private JButton remove;
@@ -60,84 +63,85 @@ public class ViolationInterface extends JFrame {
     private void sortTable() {
         LocalDate startDate = LocalDate.of(startDatePicker.getModel().getYear(), startDatePicker.getModel().getMonth(), startDatePicker.getModel().getDay()).plusMonths(1);
         LocalDate endDate = LocalDate.of(endDatePicker.getModel().getYear(), endDatePicker.getModel().getMonth(), endDatePicker.getModel().getDay()).plusMonths(1);
-        System.out.println(startDate);
-        System.out.println(endDate);
         // Проверка на null
         if (startDate.isAfter(endDate) || endDate.isBefore(startDate)){
 
-            // TODO: Вставьте свой код обработки ошибки здесь
+            JOptionPane.showMessageDialog(null, "Дата неправильная!", "Предупреждение", JOptionPane.WARNING_MESSAGE);
 
         }
-        if (startDate.equals(LocalDate.now()) || endDate.equals(LocalDate.now())) {
-            // Если оба DatePicker равны null, сбросить сортировку и показать все данные
+        else {
+            if (startDate.equals(LocalDate.now()) || endDate.equals(LocalDate.now())) {
+                // Если оба DatePicker равны null, сбросить сортировку и показать все данные
 
-            // TODO: Вставьте свой код обработки ошибки здесь
+                JOptionPane.showMessageDialog(null, "Даты нет!", "Предупреждение", JOptionPane.WARNING_MESSAGE);
 
-            return;
-        }
+                return;
+            } else {
 
-        // Получение данных из таблицы
-        List<Violation> data = IntStream.range(0, model.getRowCount())
-                .mapToObj(i -> {
-                    Violation violation = new Violation();
-                    IntStream.range(0, model.getColumnCount())
-                            .forEach(j -> {
-                                Object value = model.getValueAt(i, j);
-                                if (value != null) {
-                                    if (j == 0) {
-                                        try {
-                                            violation.setIdViolation(Integer.parseInt(value.toString()));
-                                        } catch (NumberFormatException e) {
-                                            // Обработка ошибки преобразования строки в целое число
+                // Получение данных из таблицы
+                List<Violation> data = IntStream.range(0, model.getRowCount())
+                        .mapToObj(i -> {
+                            Violation violation = new Violation();
+                            IntStream.range(0, model.getColumnCount())
+                                    .forEach(j -> {
+                                        Object value = model.getValueAt(i, j);
+                                        if (value != null) {
+                                            if (j == 0) {
+                                                try {
+                                                    violation.setIdViolation(Integer.parseInt(value.toString()));
+                                                } catch (NumberFormatException e) {
+                                                    // Обработка ошибки преобразования строки в целое число
+                                                }
+                                            } else if (j == 1) {
+                                                violation.setType((String) value);
+                                            } else if (j == 2) {
+                                                violation.setPenalty((String) value);
+                                            } else if (j == 3) {
+                                                try {
+                                                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                                                    LocalDate date = LocalDate.parse(value.toString(), formatter);
+                                                    violation.setDate(date);
+                                                } catch (DateTimeParseException e) {
+                                                    // Обработка ошибки преобразования строки в LocalDate
+                                                }
+
+                                            } else if (j == 4) {
+                                                System.out.println((String) value);
+                                                violation.setDriver(Driver.valueOf((String) value));
+                                            }
                                         }
-                                    } else if (j == 1) {
-                                        violation.setType((String) value);
-                                    } else if (j == 2) {
-                                        violation.setPenalty((String) value);
-                                    } else if (j == 3) {
-                                        try {
-                                            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-                                            LocalDate date = LocalDate.parse(value.toString(), formatter);
-                                            violation.setDate(date);
-                                        } catch (DateTimeParseException e) {
-                                            // Обработка ошибки преобразования строки в LocalDate
-                                        }
-
-                                    } else if (j == 4) {
-                                        System.out.println((String) value);
-                                        violation.setDriver(Driver.valueOf((String) value));
-                                    }
-                                }
-                            });
-                    return violation;
-                })
-                .toList();
-        System.out.println(data);
+                                    });
+                            return violation;
+                        })
+                        .toList();
+                System.out.println(data);
 
 
-        List<Violation> filteredData = new ArrayList<>();
-        data.forEach(violation -> {
-            LocalDate date = violation.getDate();
-            System.out.println(date);
-            if (date != null && date.isAfter(startDate) && date.isBefore(endDate)) {
-                filteredData.add(violation);
+                List<Violation> filteredData = new ArrayList<>();
+                data.forEach(violation -> {
+                    LocalDate date = violation.getDate();
+                    System.out.println(date);
+                    if (date != null && date.isAfter(startDate) && date.isBefore(endDate)) {
+                        filteredData.add(violation);
+                    }
+                });
+
+                model.setRowCount(0); // Очищаем модель перед добавлением новых данных
+                filteredData.forEach(violation -> {
+                    Object[] rowData = new Object[5]; // Создаем массив данных на основе количества столбцов
+                    rowData[0] = violation.getIdViolation(); // Например, присваиваем первому элементу массива значение свойства getProperty1()
+                    rowData[1] = violation.getType();
+                    rowData[2] = violation.getPenalty();
+                    rowData[3] = violation.getDate();
+                    rowData[4] = violation.getDriver();// Например, присваиваем второму элементу массива значение свойства getProperty2()
+                    // и так далее для всех свойств объекта Violation
+
+                    model.addRow(rowData); // Добавляем массив данных в модель таблицы
+                });
+
+                Posts.setModel(model); // Обновляем таблицу
             }
-        });
-
-        model.setRowCount(0); // Очищаем модель перед добавлением новых данных
-        filteredData.forEach(violation -> {
-            Object[] rowData = new Object[5]; // Создаем массив данных на основе количества столбцов
-            rowData[0] = violation.getIdViolation(); // Например, присваиваем первому элементу массива значение свойства getProperty1()
-            rowData[1] = violation.getType();
-            rowData[2] = violation.getPenalty();
-            rowData[3] = violation.getDate();
-            rowData[4] = violation.getDriver();// Например, присваиваем второму элементу массива значение свойства getProperty2()
-            // и так далее для всех свойств объекта Violation
-
-            model.addRow(rowData); // Добавляем массив данных в модель таблицы
-        });
-
-        Posts.setModel(model); // Обновляем таблицу
+        }
     }
 
     private void filterTable() {
@@ -465,6 +469,7 @@ public class ViolationInterface extends JFrame {
 // Создание кнопок и прикрепление иконок
             adding = new JButton(new ImageIcon("./img/add.png"));
             remove = new JButton(new ImageIcon("./img/remove.png"));
+            Report = new JButton(new ImageIcon("./img/save.png"));
 // Настройка подсказок для кнопок
             adding.setToolTipText("Add");
             remove.setToolTipText("Delete");
@@ -472,6 +477,7 @@ public class ViolationInterface extends JFrame {
             toolBar = new JToolBar("Панель инструментов");
             toolBar.add(adding);
             toolBar.add(remove);
+            toolBar.add(Report);
 
 
 // Размещение панели инструментов
@@ -574,8 +580,70 @@ public class ViolationInterface extends JFrame {
                     filterTable();
                 }
             });
+        Report.addActionListener(e -> {
+            try {
+// Создание парсера документа
+                DocumentBuilder builder =
+                        DocumentBuilderFactory.newInstance().newDocumentBuilder();
+// Создание пустого документа
+                Document doc = builder.newDocument();
+                Node root = doc.createElement("root");
+                doc.appendChild(root);
 
-            remove.addActionListener(e -> {
+                for (int i = 0; i < model.getRowCount(); i++) {
+
+
+                        Node Order = doc.createElement("Order");
+                        root.appendChild(Order);
+
+                        Element ID = doc.createElement("ID");
+                        ID.setTextContent((String) String.valueOf(model.getValueAt(i, 0)));
+                        Order.appendChild(ID);
+                        Element Status = doc.createElement("Date");
+                        Status.setTextContent((String) String.valueOf(model.getValueAt(i, 1)));
+                        Order.appendChild(Status);
+                        Element Problem = doc.createElement("Status");
+                        Problem.setTextContent((String) String.valueOf(model.getValueAt(i, 2)));
+                        Order.appendChild(Problem);
+                        Element CarProb = doc.createElement("Problem");
+                        CarProb.setTextContent((String) String.valueOf(model.getValueAt(i, 3)));
+                        Order.appendChild(CarProb);
+                        Element Worker = doc.createElement("Worker");
+                        Worker.setTextContent((String) String.valueOf(model.getValueAt(i, 4)));
+                        Order.appendChild(Worker);
+                    }
+
+// Создание дочерних элементов Order и присвоение значений атрибутам
+
+                try {
+// Создание преобразователя документа
+                    Transformer trans = TransformerFactory.newInstance().newTransformer();
+// Создание файла с именем Orders.xml для записи документа
+                    FileWriter fw = new FileWriter("Report.xml");
+// Запись документа в файл
+                    trans.transform(new DOMSource(doc), new StreamResult(fw));
+
+                    PDFConverter.convertToPDF("sample.xsl", "Report.xml", "FullReport.pdf");
+                    PDFConverter.ShowPDF("FullReport.pdf");
+
+
+                } catch (TransformerException ex) {
+                    ex.printStackTrace();
+                } catch (IOException | FOPException ex) {
+                    throw new RuntimeException(ex);
+
+                }
+            } catch (ParserConfigurationException ex) {
+                ex.printStackTrace();
+            }
+
+        });
+
+
+        remove.addActionListener(e -> {
+            int result = JOptionPane.showConfirmDialog(null, "Вы уверены?", "Подтверждение", JOptionPane.YES_NO_OPTION);
+            if (result == JOptionPane.YES_OPTION) {
+                // Действия при нажатии на кнопку "Да"
 
                 logger.debug(e);
                 int flag = 0;
@@ -583,7 +651,6 @@ public class ViolationInterface extends JFrame {
                     Removebutton(Posts);
                 } catch (NullPointerException ex) {
                     JOptionPane.showMessageDialog(FrameOrder, ex.toString());
-                    logger.warn("Ошибка", ex);
                     flag = 1;
                 }
                 if (flag == 0) {
@@ -593,7 +660,8 @@ public class ViolationInterface extends JFrame {
                     model.removeRow(Posts.getSelectedRow());
                     JOptionPane.showMessageDialog(remove, "Row Removed!");
                 }
-            });
+            }
+        });
 
             Posts.addMouseListener(new MouseAdapter() {
                 public void mouseClicked(MouseEvent e) {
